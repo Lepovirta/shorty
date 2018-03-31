@@ -1,0 +1,9 @@
+[package]
+name = "shorty"
+version = "0.1.0"
+authors = ["Matias Keveri <keveri@users.noreply.github.com>"]
+
+[dependencies]
+rocket = "0.3.6"
+rocket_codegen = "0.3.6"
+harsh = "0.1.4"
