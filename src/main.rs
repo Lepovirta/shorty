@@ -26,7 +26,6 @@ fn find(repo: State<RwLock<InMemoryRepo>>, id: String) -> Result<Redirect, &'sta
         Some(url) => Ok(Redirect::permanent(url)),
         _         => Err("ID not found.")
     }
-    //format!("You asked for: {}", id)
 }
 
 #[post("/", data = "<url_form>")]
@@ -35,7 +34,6 @@ fn shorten(repo: State<RwLock<InMemoryRepo>>, url_form: Form<Url>) -> Result<Str
     let mut repo = repo.write().unwrap();
     let id       = repo.store(&url);
     Ok(id.to_string())
-    //format!("We shortened '{}' for you.", url)
 }
 
 #[get("/")]
