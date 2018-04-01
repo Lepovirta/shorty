@@ -11,7 +11,7 @@ use rocket::response::Redirect;
 
 mod repository;
 use repository::InMemoryRepo;
-use repository::Cache;
+use repository::Repository;
 mod shortener;
 use shortener::HarshShortener;
 
@@ -22,8 +22,8 @@ struct Url {
 }
 
 /*
- * fn find<C: Cache + Sync + Send>(repo: State<RwLock<C>>, id: String) -> Result<Redirect, &'static str> {
- * error[E0412]: cannot find type `C` in this scope
+ * fn find<R: Repository + Sync + Send>(repo: State<RwLock<R>>, id: String) -> Result<Redirect, &'static str> {
+ * error[E0412]: cannot find type `R` in this scope
  */
 #[get("/<id>")]
 fn find(repo: State<RwLock<InMemoryRepo<HarshShortener>>>, id: String) -> Result<Redirect, &'static str> {
@@ -63,10 +63,10 @@ fn usage() -> &'static str {
 }
 
 
-fn run<C>() where
-    C : Cache + Sync + Send + 'static {
+fn run<R>() where
+    R: Repository + Sync + Send + 'static {
     rocket::ignite()
-        .manage(RwLock::new(C::new()))
+        .manage(RwLock::new(R::new()))
         .mount("/", routes![find, shorten, usage])
         .launch();
 }

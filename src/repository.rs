@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use shortener::Shortener;
 
 
-pub trait Cache {
+pub trait Repository {
     fn new() -> Self;
     // Find a stored item
     fn find(&self, id: String) -> Option<&String>;
@@ -20,13 +20,14 @@ pub struct InMemoryRepo<S: Shortener> {
     shortener: S,
 }
 
-impl<S> Cache for InMemoryRepo<S> where S: Shortener {
+impl<S> Repository for InMemoryRepo<S> where S: Shortener {
     fn new() -> InMemoryRepo<S> {
         InMemoryRepo {
             urls: HashMap::new(),
             shortener: S::new(),
         }
     }
+
     fn find(&self, id: String) -> Option<&String> {
         self.urls.get(&id)
     }
