@@ -1,19 +1,10 @@
 use std::collections::HashMap;
-use shortener::HarshShortener;
-use shortener::Shortable;
 
-/*
- * Repository stores URLs and provides a shortener.
- */
-pub struct Repository<T1, T2> {
-    urls: T1,
-    shortener: T2,
-}
+use shortener::Shortener;
 
-/*
- * Cache is the interface when interacting with a repository.
- */
+
 pub trait Cache {
+    fn new() -> Self;
     // Find a stored item
     fn find(&self, id: String) -> Option<&String>;
     // Store an item and return it's ID
@@ -24,18 +15,18 @@ pub trait Cache {
 /*
  * Example implementation of a Repository using a HashMap.
  */
-pub type InMemoryRepo = Repository<HashMap<String, String>, HarshShortener>;
-
-impl InMemoryRepo {
-    pub fn new() -> InMemoryRepo {
-        Repository {
-            urls: HashMap::new(),
-            shortener: HarshShortener::new(),
-        }
-    }
+pub struct InMemoryRepo<S: Shortener> {
+    urls: HashMap<String, String>,
+    shortener: S,
 }
 
-impl Cache for InMemoryRepo {
+impl<S> Cache for InMemoryRepo<S> where S: Shortener {
+    fn new() -> InMemoryRepo<S> {
+        InMemoryRepo {
+            urls: HashMap::new(),
+            shortener: S::new(),
+        }
+    }
     fn find(&self, id: String) -> Option<&String> {
         self.urls.get(&id)
     }

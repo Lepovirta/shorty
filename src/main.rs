@@ -10,9 +10,10 @@ use rocket::request::Form;
 use rocket::response::Redirect;
 
 mod repository;
-mod shortener;
 use repository::InMemoryRepo;
 use repository::Cache;
+mod shortener;
+use shortener::HarshShortener;
 
 
 #[derive(FromForm)]
@@ -20,8 +21,12 @@ struct Url {
     url: String,
 }
 
+/*
+ * fn find<C: Cache + Sync + Send>(repo: State<RwLock<C>>, id: String) -> Result<Redirect, &'static str> {
+ * error[E0412]: cannot find type `C` in this scope
+ */
 #[get("/<id>")]
-fn find(repo: State<RwLock<InMemoryRepo>>, id: String) -> Result<Redirect, &'static str> {
+fn find(repo: State<RwLock<InMemoryRepo<HarshShortener>>>, id: String) -> Result<Redirect, &'static str> {
     match repo.read().unwrap().find(id) {
         Some(url) => Ok(Redirect::permanent(url)),
         _         => Err("ID not found.")
@@ -29,7 +34,7 @@ fn find(repo: State<RwLock<InMemoryRepo>>, id: String) -> Result<Redirect, &'sta
 }
 
 #[post("/", data = "<url_form>")]
-fn shorten(repo: State<RwLock<InMemoryRepo>>, url_form: Form<Url>) -> Result<String, String> {
+fn shorten(repo: State<RwLock<InMemoryRepo<HarshShortener>>>, url_form: Form<Url>) -> Result<String, String> {
     let ref url  = url_form.get().url;
     let mut repo = repo.write().unwrap();
     let id       = repo.store(&url);
@@ -58,9 +63,14 @@ fn usage() -> &'static str {
 }
 
 
-fn main() {
+fn run<C>() where
+    C : Cache + Sync + Send + 'static {
     rocket::ignite()
-        .manage(RwLock::new(InMemoryRepo::new()))
+        .manage(RwLock::new(C::new()))
         .mount("/", routes![find, shorten, usage])
         .launch();
+}
+
+fn main() {
+    run::<InMemoryRepo<HarshShortener>>()
 }
