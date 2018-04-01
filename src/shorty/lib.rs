@@ -9,10 +9,10 @@ use rocket::State;
 use rocket::request::Form;
 use rocket::response::Redirect;
 
-mod repository;
+pub mod repository;
+pub mod shortener;
 use repository::InMemoryRepo;
 use repository::Repository;
-mod shortener;
 use shortener::HarshShortener;
 
 
@@ -63,14 +63,9 @@ fn usage() -> &'static str {
 }
 
 
-fn run<R>() where
+pub fn app<R>() -> rocket::Rocket where
     R: Repository + Sync + Send + 'static {
     rocket::ignite()
         .manage(RwLock::new(R::new()))
         .mount("/", routes![find, shorten, usage])
-        .launch();
-}
-
-fn main() {
-    run::<InMemoryRepo<HarshShortener>>()
 }

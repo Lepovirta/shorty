@@ -3,6 +3,15 @@ name = "shorty"
 version = "0.1.0"
 authors = ["Matias Keveri <keveri@users.noreply.github.com>"]
 
+[lib]
+name = "shorty"
+path = "src/shorty/lib.rs"
+
+[[bin]]
+name = "server"
+test = false
+doc  = false
+
 [dependencies]
 rocket = "0.3.6"
 rocket_codegen = "0.3.6"
