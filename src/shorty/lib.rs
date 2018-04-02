@@ -22,15 +22,17 @@ struct Url {
 
 
 #[get("/<id>")]
-fn find(repo: State<RwLock<BRepository>>, id: String) -> Option<Redirect> {
-    let repo = &repo.read().unwrap().data;
-    repo.find(id).map(|url| Redirect::permanent(url))
+fn find(brepo: State<RwLock<BRepository>>, id: String) -> Option<Redirect> {
+    let repo = &brepo.read().unwrap();
+    repo.data
+        .find(id)
+        .map(|url| Redirect::permanent(url))
 }
 
 #[post("/", data = "<url_form>")]
-fn shorten(repo: State<RwLock<BRepository>>, url_form: Form<Url>) -> Result<String, String> {
+fn shorten(brepo: State<RwLock<BRepository>>, url_form: Form<Url>) -> Result<String, String> {
     let ref url  = url_form.get().url;
-    let mut repo = repo.write().unwrap();
+    let mut repo = brepo.write().unwrap();
     let id       = repo.data.store(&url);
     Ok(id.to_string())
 }
