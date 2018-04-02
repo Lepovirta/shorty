@@ -20,3 +20,8 @@ Build and run:
 ```sh
 cargo run
 ```
+
+Run tests:
+```sh
+cargo test
+```
