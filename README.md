@@ -1,4 +1,8 @@
 # shorty
+
+[![Build Status](https://travis-ci.org/keveri/shorty.svg?branch=master)](https://travis-ci.org/keveri/shorty)
+
+
 Rusty URL Shortener
 
 ## Setup
