@@ -22,11 +22,9 @@ struct Url {
 
 
 #[get("/<id>")]
-fn find(repo: State<RwLock<BRepository>>, id: String) -> Result<Redirect, &'static str> {
-    match repo.read().unwrap().data.find(id) {
-        Some(url) => Ok(Redirect::permanent(url)),
-        _         => Err("ID not found.")
-    }
+fn find(repo: State<RwLock<BRepository>>, id: String) -> Option<Redirect> {
+    let repo = &repo.read().unwrap().data;
+    repo.find(id).map(|url| Redirect::permanent(url))
 }
 
 #[post("/", data = "<url_form>")]
@@ -42,7 +40,7 @@ fn usage() -> &'static str {
     "
     USAGE\n
       POST /\n
-          accepts an URL in the body of the request and responds with an ID\n\n
+          accepts an URL as form data ('url=example.com') and responds with an ID\n\n
       GET /<id>\n
           redirects to found url for id `<id>`\n\n
       GET /\n
