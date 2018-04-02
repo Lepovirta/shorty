@@ -3,17 +3,22 @@ use std::collections::HashMap;
 use shortener::Shortener;
 
 
+/*
+ * Defines common functions for implementing a Repository.
+ * find: return stored String for given ID
+ * store: store given String and return an ID for it
+ */
 pub trait Repository {
-    // Find a stored item
     fn find(&self, id: String) -> Option<&String>;
-    // Store an item and return it's ID
     fn store(&mut self, url: &String) -> String;
 }
 
 /*
- * This wraps a trait into an object for rocket request handlers in lib.rs.
- * Rust requires concrete types so this is a work around for that.
- * TODO: is a new struct really needed for using a trait object?
+ * Wrap Repository inside a Box making it an trait object. This way it is
+ * possible to pass it in rocket library's request handlers. Request handlers
+ * require concrete types and this can be achieved with a trait object
+ * providing dynamic dispatch.
+ * TODO: is this the 'best' way?
  */
 pub struct BRepository {
     pub data : Box<Repository + Sync + Send>,
@@ -21,7 +26,8 @@ pub struct BRepository {
 
 
 /*
- * Example implementation of a Repository using a HashMap.
+ * Example implementation of a Repository using a HashMap. Any Shortener can
+ * be used with this Repository as it's generic.
  */
 pub struct InMemoryRepo<T: Shortener> {
     urls: HashMap<String, String>,
