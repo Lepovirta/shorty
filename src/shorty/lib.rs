@@ -4,6 +4,10 @@
 extern crate rocket;
 extern crate harsh;
 
+extern crate r2d2;
+extern crate r2d2_redis;
+extern crate redis;
+
 use std::sync::RwLock;
 use rocket::State;
 use rocket::request::Form;
@@ -32,7 +36,7 @@ fn find(brepo: State<RwLock<BRepository>>, id: String) -> Option<Redirect> {
     let repo = &brepo.read().unwrap();
     repo.data
         .find(id)
-        .map(|url| Redirect::permanent(url))
+        .map(|url| Redirect::permanent(&url))
 }
 
 /*

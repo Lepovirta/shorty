@@ -9,7 +9,7 @@ use shortener::Shortener;
  * store: store given String and return an ID for it
  */
 pub trait Repository {
-    fn find(&self, id: String) -> Option<&String>;
+    fn find(&self, id: String) -> Option<String>;
     fn store(&mut self, url: &String) -> String;
 }
 
@@ -44,13 +44,62 @@ impl<T> InMemoryRepo<T> where T: Shortener {
 }
 
 impl<T> Repository for InMemoryRepo<T> where T: Shortener {
-    fn find(&self, id: String) -> Option<&String> {
-        self.urls.get(&id)
+    fn find(&self, id: String) -> Option<String> {
+        self.urls.get(&id).map(|x| x.to_string())
     }
 
     fn store(&mut self, url: &String) -> String {
         let id = self.shortener.next();
         self.urls.insert(id.to_string(), url.to_string());
+        id
+    }
+}
+
+
+
+
+extern crate r2d2;
+extern crate redis;
+use r2d2_redis::RedisConnectionManager;
+use redis::Commands;
+
+
+type Pool = r2d2::Pool<RedisConnectionManager>;
+
+fn init_pool(db_url: &'static str) -> Pool {
+    let manager = RedisConnectionManager::new(db_url).unwrap();
+    r2d2::Pool::builder()
+        .build(manager)
+        .unwrap()
+}
+
+pub struct RedisRepo<T:Shortener> {
+    pool: Pool,
+    shortener: T,
+}
+
+impl<T> RedisRepo<T> where T: Shortener {
+    pub fn new(db_url: &'static str, id_len: usize) -> RedisRepo<T> {
+        RedisRepo {
+            pool: init_pool(db_url),
+            shortener : T::new(id_len),
+        }
+    }
+}
+
+impl<T> Repository for RedisRepo<T> where T: Shortener {
+    fn find(&self, id: String) -> Option<String> {
+        let conn = self.pool.get().unwrap();
+        match conn.get(id) {
+            Ok(r) => Some(r),
+            Err(_) => None
+        }
+    }
+
+    fn store(&mut self, url: &String) -> String {
+        let id   = self.shortener.next();
+        let conn = self.pool.get().unwrap();
+        let _ : Result<String,redis::RedisError> = conn.set(id.to_string(), url);
         id
     }
 }
