@@ -10,7 +10,7 @@ use shorty::shortener::HarshShortener;
 
 
 fn test_client() -> rocket::local::Client {
-    let repo: InMemoryRepo<HarshShortener> = InMemoryRepo::new();
+    let repo: InMemoryRepo<HarshShortener> = InMemoryRepo::new(4);
     let boxed_repo = BRepository { data: Box::new(repo) };
     let rocket     = shorty::app(boxed_repo);
     Client::new(rocket).expect("valid rocket instance")
@@ -27,7 +27,7 @@ fn api_index_reponds_with_ok() {
 #[test]
 fn shortening_api_returns_expected_id_for_the_first_url() {
     let client   = test_client();
-    let first_id = "gY";
+    let first_id = "egYb";
     let request  = client.post("/")
         .header(ContentType::Form)
         .body(r#"url=https://www.rust-lang.org"#);
@@ -46,7 +46,7 @@ fn find_api_returns_an_error_when_requested_with_an_invalid_id() {
 #[test]
 fn shortening_api_creates_an_working_id_and_redirects_from_find_api_with_it() {
     let client   = test_client();
-    let first_id = "gY";
+    let first_id = "egYb";
     let request  = client.post("/")
         .header(ContentType::Form)
         .body(r#"url=https://www.rust-lang.org"#);

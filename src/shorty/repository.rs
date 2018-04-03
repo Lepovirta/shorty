@@ -35,10 +35,10 @@ pub struct InMemoryRepo<T: Shortener> {
 }
 
 impl<T> InMemoryRepo<T> where T: Shortener {
-    pub fn new() -> InMemoryRepo<T> {
+    pub fn new(id_len: usize) -> InMemoryRepo<T> {
         InMemoryRepo {
             urls: HashMap::new(),
-            shortener: T::new(),
+            shortener: T::new(id_len),
         }
     }
 }

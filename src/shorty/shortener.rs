@@ -7,7 +7,7 @@ use harsh::{Harsh, HarshBuilder};
  * next: return next short id
  */
 pub trait Shortener {
-    fn new() -> Self;
+    fn new(len: usize) -> Self;
     fn next(&mut self) -> String;
 }
 
@@ -21,10 +21,10 @@ pub struct HarshShortener {
 }
 
 impl Shortener for HarshShortener {
-    fn new() -> HarshShortener {
+    fn new(len: usize) -> HarshShortener {
         HarshShortener {
             id: 0,
-            generator: HarshBuilder::new().init().unwrap(),
+            generator: HarshBuilder::new().length(len).init().unwrap(),
         }
     }
     fn next(&mut self) -> String {

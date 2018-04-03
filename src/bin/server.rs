@@ -9,7 +9,7 @@ use shorty::shortener::HarshShortener;
  * also need to Box the Repository trait to an trait object.
  */
 fn main() {
-    let repo: InMemoryRepo<HarshShortener> = InMemoryRepo::new();
+    let repo: InMemoryRepo<HarshShortener> = InMemoryRepo::new(4);
     let boxed_repo = BRepository { data: Box::new(repo) };
     let app_server = shorty::app(boxed_repo);
     app_server.launch();
