@@ -29,3 +29,21 @@ Run tests:
 ```sh
 cargo test
 ```
+
+## Try it out
+
+Create new short url ID:
+```sh
+$ curl --data "url=https://www.rust-lang.org" http://localhost:8000/
+egYb
+```
+
+Lookup a short ID:
+```sh
+$ curl -I http://localhost:8000/egYb
+HTTP/1.1 308 Permanent Redirect
+Location: https://www.rust-lang.org
+Server: Rocket
+Content-Length: 0
+Date: Tue, 03 Apr 2018 21:15:35 GMT
+```
