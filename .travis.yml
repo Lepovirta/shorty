@@ -5,3 +5,6 @@ services:
   - redis-server
 env:
   - REDIS_HOST=localhost
+script:
+  - rustup update
+  - cargo test --verbose
