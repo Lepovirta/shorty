@@ -10,7 +10,8 @@ use shorty::shortener::HarshShortener;
  */
 fn main() {
     let redis_host = std::env::var("REDIS_HOST").unwrap();
-    let redis_url  = format!("redis://{}:6379", redis_host);
+    let redis_port = std::env::var("REDIS_PORT").unwrap_or("6379".to_string());
+    let redis_url  = format!("redis://{}:{}", redis_host, redis_port);
     let repo: RedisRepo<HarshShortener> = RedisRepo::new(&redis_url, 4);
     let boxed_repo = BRepository { data: Box::new(repo) };
     let app_server = shorty::app(boxed_repo);
