@@ -15,19 +15,25 @@ rustup override set nightly
 
 ## Build & Run
 
-Just build:
+Build:
 ```sh
 cargo build
-```
-
-Build and run:
-```sh
-cargo run
 ```
 
 Run tests:
 ```sh
 cargo test
+```
+
+Run with docker:
+```sh
+docker-compose up
+```
+
+Run on host:
+```sh
+# install and start redis locally
+REDIS_HOST=localhost cargo run
 ```
 
 ## Try it out
