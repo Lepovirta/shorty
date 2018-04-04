@@ -19,7 +19,7 @@ pub struct RedisRepo<T:Shortener> {
     shortener: T,
 }
 
-fn init_pool(db_url: &'static str) -> Pool {
+fn init_pool(db_url: &str) -> Pool {
     let manager = RedisConnectionManager::new(db_url).unwrap();
     r2d2Pool::builder()
         .build(manager)
@@ -27,7 +27,7 @@ fn init_pool(db_url: &'static str) -> Pool {
 }
 
 impl<T> RedisRepo<T> where T: Shortener {
-    pub fn new(db_url: &'static str, id_len: usize) -> RedisRepo<T> {
+    pub fn new(db_url: &str, id_len: usize) -> RedisRepo<T> {
         RedisRepo {
             pool: init_pool(db_url),
             shortener : T::new(id_len),
