@@ -3,7 +3,6 @@
  * new: provide initialization
  * next: return next short id
  */
-pub trait Shortener {
-    fn new(len: usize) -> Self;
+pub trait Shortener: Sync + Send {
     fn next(&mut self) -> String;
 }

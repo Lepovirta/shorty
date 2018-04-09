@@ -1,35 +1,32 @@
 use std::collections::HashMap;
+use std::sync::RwLock;
 
 use repository::Repository;
-use shortener::Shortener;
-
 
 /*
  * Repository implementation using a HashMap. Any Shortener can be used with
  * this Repository as it's generic.
  */
-pub struct InMemoryRepo<T: Shortener> {
-    urls: HashMap<String, String>,
-    shortener: T,
+pub struct InMemoryRepo {
+    urls: RwLock<HashMap<String, String>>,
 }
 
-impl<T> InMemoryRepo<T> where T: Shortener {
-    pub fn new(id_len: usize) -> InMemoryRepo<T> {
+impl InMemoryRepo {
+    pub fn new() -> InMemoryRepo {
         InMemoryRepo {
-            urls: HashMap::new(),
-            shortener: T::new(id_len),
+            urls: RwLock::new(HashMap::new()),
         }
     }
 }
 
-impl<T> Repository for InMemoryRepo<T> where T: Shortener {
-    fn find(&self, id: String) -> Option<String> {
-        self.urls.get(&id).map(|x| x.to_string())
+impl Repository for InMemoryRepo {
+    fn find(&self, id: &str) -> Option<String> {
+        let urls = self.urls.read().unwrap();
+        urls.get(id).map(|x| x.to_string())
     }
 
-    fn store(&mut self, url: &String) -> String {
-        let id = self.shortener.next();
-        self.urls.insert(id.to_string(), url.to_string());
-        id
+    fn store(&self, id: &str, url: &str) {
+        let mut urls = self.urls.write().unwrap();
+        urls.insert(id.to_string(), url.to_string());
     }
 }
