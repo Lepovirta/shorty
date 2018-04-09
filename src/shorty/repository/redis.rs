@@ -4,7 +4,6 @@ use redis::Commands;
 use redis::RedisError;
 
 use repository::Repository;
-use shortener::Shortener;
 
 
 /*
@@ -14,9 +13,8 @@ use shortener::Shortener;
 
 type Pool = r2d2Pool<RedisConnectionManager>;
 
-pub struct RedisRepo<T:Shortener> {
+pub struct RedisRepo {
     pool: Pool,
-    shortener: T,
 }
 
 fn init_pool(db_url: &str) -> Pool {
@@ -26,17 +24,16 @@ fn init_pool(db_url: &str) -> Pool {
         .unwrap()
 }
 
-impl<T> RedisRepo<T> where T: Shortener {
-    pub fn new(db_url: &str, id_len: usize) -> RedisRepo<T> {
+impl RedisRepo {
+    pub fn new(db_url: &str) -> RedisRepo {
         RedisRepo {
             pool: init_pool(db_url),
-            shortener : T::new(id_len),
         }
     }
 }
 
-impl<T> Repository for RedisRepo<T> where T: Shortener {
-    fn find(&self, id: String) -> Option<String> {
+impl Repository for RedisRepo {
+    fn find(&self, id: &str) -> Option<String> {
         let conn = self.pool.get().unwrap();
         match conn.get(id) {
             Ok(r) => Some(r),
@@ -44,10 +41,8 @@ impl<T> Repository for RedisRepo<T> where T: Shortener {
         }
     }
 
-    fn store(&mut self, url: &String) -> String {
-        let id   = self.shortener.next();
+    fn store(&self, id: &str, url: &str) {
         let conn = self.pool.get().unwrap();
-        let _ : Result<String,RedisError> = conn.set(id.to_string(), url);
-        id
+        let _ : Result<String, RedisError> = conn.set(id.to_string(), url);
     }
 }

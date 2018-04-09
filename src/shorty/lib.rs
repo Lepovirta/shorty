@@ -7,15 +7,32 @@ extern crate r2d2;
 extern crate r2d2_redis;
 extern crate redis;
 
+use std::sync::Arc;
 use std::sync::RwLock;
 use rocket::State;
 use rocket::request::Form;
 use rocket::response::Redirect;
 
-use repository::BRepository;
+use repository::Repository;
+use shortener::Shortener;
 
 pub mod repository;
 pub mod shortener;
+
+struct AppState {
+    repo: Arc<Repository>,
+    shortener: Arc<RwLock<Shortener>>,
+}
+
+impl AppState {
+    fn new<R, S>(repo: R, shortener: S) -> AppState
+        where R: Repository + 'static, S: Shortener + 'static {
+        AppState {
+            repo: Arc::new(repo),
+            shortener: Arc::new(RwLock::new(shortener)),
+        }
+    }
+}
 
 /*
  * Struct for defining the form data content.
@@ -31,10 +48,9 @@ struct Url {
  * Redirect to the found URL or return 404 error.
  */
 #[get("/<id>")]
-fn find(brepo: State<RwLock<BRepository>>, id: String) -> Option<Redirect> {
-    let repo = &brepo.read().unwrap();
-    repo.data
-        .find(id)
+fn find(state: State<AppState>, id: String) -> Option<Redirect> {
+    state.repo
+        .find(&id)
         .map(|url| Redirect::permanent(&url))
 }
 
@@ -43,11 +59,11 @@ fn find(brepo: State<RwLock<BRepository>>, id: String) -> Option<Redirect> {
  * Respond with a short ID for valid data and error for the rest..
  */
 #[post("/", data = "<url_form>")]
-fn shorten(brepo: State<RwLock<BRepository>>, url_form: Form<Url>) -> Result<String, String> {
+fn shorten(state: State<AppState>, url_form: Form<Url>) -> Result<String, String> {
     let ref url  = url_form.get().url;
-    let mut repo = brepo.write().unwrap();
-    let id       = repo.data.store(&url);
-    Ok(id.to_string())
+    let id       = state.shortener.write().unwrap().next();
+    state.repo.store(&id, &url);
+    Ok(id)
 }
 
 /*
@@ -70,8 +86,9 @@ fn usage() -> &'static str {
 /*
  * Build and return an app ready to be launched.
  */
-pub fn app(repo: BRepository) -> rocket::Rocket {
+pub fn app<R, S>(repo: R, shortener: S) -> rocket::Rocket
+    where R: Repository + 'static, S: Shortener + 'static {
     rocket::ignite()
-        .manage(RwLock::new(repo))
+        .manage(AppState::new(repo, shortener))
         .mount("/", routes![find, shorten, usage])
 }
