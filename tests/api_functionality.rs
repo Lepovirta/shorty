@@ -4,15 +4,14 @@ extern crate shorty;
 use rocket::local::Client;
 use rocket::http::{ContentType, Status};
 
-use shorty::repository::BRepository;
 use shorty::repository::InMemoryRepo;
 use shorty::shortener::HarshShortener;
 
 
 fn test_client() -> rocket::local::Client {
-    let repo: InMemoryRepo<HarshShortener> = InMemoryRepo::new(4);
-    let boxed_repo = BRepository { data: Box::new(repo) };
-    let rocket     = shorty::app(boxed_repo);
+    let repo      = InMemoryRepo::new();
+    let shortener = HarshShortener::new(4);
+    let rocket    = shorty::app(repo, shortener);
     Client::new(rocket).expect("valid rocket instance")
 }
 
